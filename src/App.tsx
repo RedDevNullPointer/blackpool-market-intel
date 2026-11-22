@@ -1,5 +1,12 @@
 import { useEffect, useState } from "react";
 
+interface EventItem {
+  name: string;
+  date: string;
+  venue: string;
+  link: string;
+}
+
 interface MarketIntelData {
   location: string;
   timestamp: string;
@@ -12,6 +19,7 @@ interface MarketIntelData {
     m55_inbound_status: string;
     delay_minutes: number;
   };
+  events?: EventItem[];
   commercial_recommendation: string;
 }
 
@@ -65,7 +73,7 @@ export default function App() {
         <header className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-slate-800 pb-6">
           <div>
             <p className="text-xs uppercase tracking-widest text-sky-400 font-semibold">
-              Best Western Carlton Hotel • F&B Operations
+              The Carlton Hotel • F&B Operations
             </p>
             <h1 className="text-3xl font-bold tracking-tight mt-1">
               Blackpool Market Intelligence
@@ -161,6 +169,56 @@ export default function App() {
               <p className="text-lg leading-relaxed text-slate-100">
                 {data.commercial_recommendation}
               </p>
+            </section>
+
+            {/* Upcoming Blackpool Events */}
+            <section className="md:col-span-2 rounded-2xl bg-slate-900 border border-slate-800 p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-400">
+                  Upcoming Blackpool Footfall Drivers
+                </h2>
+                <span className="text-xs text-slate-500">
+                  Live Google Events
+                </span>
+              </div>
+
+              {data.events && data.events.length > 0 ? (
+                <ul className="divide-y divide-slate-800">
+                  {data.events.map((ev, index) => (
+                    <li
+                      key={index}
+                      className="py-3.5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2"
+                    >
+                      <div>
+                        {ev.link ? (
+                          <a
+                            href={ev.link}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="font-medium text-slate-100 hover:text-sky-400 transition"
+                          >
+                            {ev.name}
+                          </a>
+                        ) : (
+                          <p className="font-medium text-slate-100">
+                            {ev.name}
+                          </p>
+                        )}
+                        <p className="text-xs text-slate-400 mt-0.5">
+                          {ev.venue}
+                        </p>
+                      </div>
+                      <span className="text-xs font-medium text-sky-300 bg-sky-500/10 border border-sky-500/30 px-3 py-1 rounded-full w-fit shrink-0">
+                        {ev.date}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-sm text-slate-400">
+                  No upcoming events found.
+                </p>
+              )}
             </section>
           </main>
         )}
