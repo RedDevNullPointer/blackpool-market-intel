@@ -7,6 +7,18 @@ interface EventItem {
   link: string;
 }
 
+interface HotelMarketData {
+  target_window: string;
+  check_in_date: string;
+  avg_rate_gbp: number | null;
+  available_properties: number;
+  sold_out_properties: number;
+  total_checked: number;
+  demand_level: string;
+  carlton_status: string;
+  carlton_rate_gbp: number | null;
+}
+
 interface MarketIntelData {
   location: string;
   timestamp: string;
@@ -19,6 +31,7 @@ interface MarketIntelData {
     m55_inbound_status: string;
     delay_minutes: number;
   };
+  hotel_market?: HotelMarketData;
   events?: EventItem[];
   commercial_recommendation: string;
 }
@@ -66,6 +79,15 @@ export default function App() {
         ? "bg-amber-500/20 text-amber-300 border-amber-500/40"
         : "bg-emerald-500/20 text-emerald-300 border-emerald-500/40";
 
+  const hotelDemandBadgeColor =
+    data?.hotel_market?.demand_level === "High Demand"
+      ? "bg-amber-500/20 text-amber-300 border-amber-500/40"
+      : data?.hotel_market?.demand_level === "Moderate Demand"
+        ? "bg-sky-500/20 text-sky-300 border-sky-500/40"
+        : data?.hotel_market?.demand_level === "Low Demand"
+          ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40"
+          : "bg-slate-700/40 text-slate-300 border-slate-600/50";
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 p-6 md:p-10">
       <div className="max-w-6xl mx-auto space-y-8">
@@ -104,16 +126,17 @@ export default function App() {
 
         {/* Loading State */}
         {loading && !data && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-pulse">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-pulse">
             <div className="h-44 rounded-2xl bg-slate-900 border border-slate-800" />
             <div className="h-44 rounded-2xl bg-slate-900 border border-slate-800" />
-            <div className="h-36 md:col-span-2 rounded-2xl bg-slate-900 border border-slate-800" />
+            <div className="h-44 rounded-2xl bg-slate-900 border border-slate-800" />
+            <div className="h-36 lg:col-span-3 rounded-2xl bg-slate-900 border border-slate-800" />
           </div>
         )}
 
         {/* Dashboard Grid */}
         {data && (
-          <main className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <main className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Weather Card */}
             <section className="rounded-2xl bg-slate-900 border border-slate-800 p-6 flex flex-col justify-between">
               <div className="flex items-center justify-between">
@@ -140,12 +163,12 @@ export default function App() {
 
             {/* Traffic Card */}
             <section className="rounded-2xl bg-slate-900 border border-slate-800 p-6 flex flex-col justify-between">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-2">
                 <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-400">
                   M55 Inbound Traffic
                 </h2>
                 <span
-                  className={`text-xs font-medium px-3 py-1 rounded-full border ${trafficBadgeColor}`}
+                  className={`text-xs font-medium px-3 py-1 rounded-full border shrink-0 ${trafficBadgeColor}`}
                 >
                   {data.traffic.m55_inbound_status}
                 </span>
@@ -161,8 +184,65 @@ export default function App() {
               </p>
             </section>
 
+            {/* Hotel Demand Card */}
+            <section className="rounded-2xl bg-slate-900 border border-slate-800 p-6 flex flex-col justify-between">
+              <div className="flex items-center justify-between gap-2">
+                <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-400">
+                  Promenade Hotel Demand
+                </h2>
+                <span
+                  className={`text-xs font-medium px-3 py-1 rounded-full border shrink-0 ${hotelDemandBadgeColor}`}
+                >
+                  {data.hotel_market?.demand_level ?? "Unavailable"}
+                </span>
+              </div>
+
+              <div className="my-4">
+                <div className="flex items-baseline gap-2">
+                  <span className="text-5xl font-bold text-white">
+                    {data.hotel_market?.avg_rate_gbp !== null &&
+                    data.hotel_market?.avg_rate_gbp !== undefined
+                      ? `£${data.hotel_market.avg_rate_gbp}`
+                      : "N/A"}
+                  </span>
+                  <span className="text-lg text-slate-400">/ night avg</span>
+                </div>
+                {data.hotel_market?.target_window && (
+                  <p className="text-xs text-sky-400 mt-1">
+                    Window: {data.hotel_market.target_window} (
+                    {data.hotel_market.check_in_date})
+                  </p>
+                )}
+              </div>
+
+              <div className="text-sm text-slate-400 space-y-1">
+                <p>
+                  <span className="text-slate-200 font-medium">
+                    {data.hotel_market?.available_properties ?? 0} available
+                  </span>{" "}
+                  •{" "}
+                  <span className="text-slate-200 font-medium">
+                    {data.hotel_market?.sold_out_properties ?? 0} sold out
+                  </span>{" "}
+                  (Google Hotels)
+                </p>
+                {data.hotel_market &&
+                  data.hotel_market.carlton_status !== "Not Listed" && (
+                    <p className="text-xs text-slate-300">
+                      Carlton Status:{" "}
+                      <span className="font-medium text-white">
+                        {data.hotel_market.carlton_status}
+                        {data.hotel_market.carlton_rate_gbp
+                          ? ` (£${data.hotel_market.carlton_rate_gbp})`
+                          : ""}
+                      </span>
+                    </p>
+                  )}
+              </div>
+            </section>
+
             {/* Commercial Strategy Banner */}
-            <section className="md:col-span-2 rounded-2xl bg-linear-to-br from-slate-900 to-sky-950/40 border border-sky-800/50 p-6">
+            <section className="lg:col-span-3 rounded-2xl bg-linear-to-br from-slate-900 to-sky-950/40 border border-sky-800/50 p-6">
               <h2 className="text-sm font-semibold uppercase tracking-wider text-sky-400 mb-3">
                 Automated F&B Commercial Strategy
               </h2>
@@ -172,7 +252,7 @@ export default function App() {
             </section>
 
             {/* Upcoming Blackpool Events */}
-            <section className="md:col-span-2 rounded-2xl bg-slate-900 border border-slate-800 p-6">
+            <section className="lg:col-span-3 rounded-2xl bg-slate-900 border border-slate-800 p-6">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-400">
                   Upcoming Blackpool Footfall Drivers
