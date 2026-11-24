@@ -27,6 +27,14 @@ interface MarketIntelData {
     temp_celsius: number;
     wind_speed_mph: number;
   };
+  rail?: {
+  station: string;
+  status: string;
+  delayed_trains: number;
+  cancelled_trains: number;
+  total_checked: number;
+  next_affected_route: string | null;
+};
   traffic: {
     m55_inbound_status: string;
     delay_minutes: number;
@@ -35,6 +43,7 @@ interface MarketIntelData {
   events?: EventItem[];
   commercial_recommendation: string;
 }
+
 
 export default function App() {
   const [data, setData] = useState<MarketIntelData | null>(null);
@@ -136,7 +145,7 @@ export default function App() {
 
         {/* Dashboard Grid */}
         {data && (
-          <main className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <main className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
             {/* Weather Card */}
             <section className="rounded-2xl bg-slate-900 border border-slate-800 p-6 flex flex-col justify-between">
               <div className="flex items-center justify-between">
@@ -160,6 +169,48 @@ export default function App() {
                 </span>
               </p>
             </section>
+
+            {/* Blackpool North Rail Card */}
+<div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 flex flex-col justify-between">
+  <div className="flex items-center justify-between mb-4">
+    <h2 className="text-xs font-semibold tracking-wider text-slate-400 uppercase">
+      Blackpool North Rail (BPN)
+    </h2>
+    <span
+      className={`px-3 py-1 rounded-full text-xs font-medium border ${
+        data.rail?.status === "On Time"
+          ? "bg-emerald-950/60 text-emerald-400 border-emerald-800/60"
+          : data.rail?.status === "Minor Delays"
+          ? "bg-amber-950/60 text-amber-400 border-amber-800/60"
+          : data.rail?.status === "Disrupted"
+          ? "bg-rose-950/60 text-rose-400 border-rose-800/60"
+          : "bg-slate-800 text-slate-400 border-slate-700"
+      }`}
+    >
+      {data.rail?.status || "Unavailable"}
+    </span>
+  </div>
+
+  <div>
+    <div className="text-4xl font-bold text-white mb-1">
+      {data.rail?.status === "On Time"
+        ? "Clear"
+        : `${(data.rail?.delayed_trains ?? 0) + (data.rail?.cancelled_trains ?? 0)} affected`}
+    </div>
+    <p className="text-sm text-sky-400 mb-4">
+      {data.rail?.next_affected_route
+        ? `Affected route: ${data.rail.next_affected_route}`
+        : `Inbound arrivals checked: ${data.rail?.total_checked ?? 0}`}
+    </p>
+  </div>
+
+  <div className="text-sm text-slate-300">
+    <span className="font-semibold text-white">
+      {data.rail?.delayed_trains ?? 0} delayed • {data.rail?.cancelled_trains ?? 0} cancelled
+    </span>{" "}
+    <span className="text-slate-400">(Realtime Trains)</span>
+  </div>
+</div>
 
             {/* Traffic Card */}
             <section className="rounded-2xl bg-slate-900 border border-slate-800 p-6 flex flex-col justify-between">
