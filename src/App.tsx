@@ -28,13 +28,13 @@ interface MarketIntelData {
     wind_speed_mph: number;
   };
   rail?: {
-  station: string;
-  status: string;
-  delayed_trains: number;
-  cancelled_trains: number;
-  total_checked: number;
-  next_affected_route: string | null;
-};
+    station: string;
+    status: string;
+    delayed_trains: number;
+    cancelled_trains: number;
+    total_checked: number;
+    next_affected_route: string | null;
+  };
   traffic: {
     m55_inbound_status: string;
     delay_minutes: number;
@@ -43,7 +43,6 @@ interface MarketIntelData {
   events?: EventItem[];
   commercial_recommendation: string;
 }
-
 
 export default function App() {
   const [data, setData] = useState<MarketIntelData | null>(null);
@@ -70,7 +69,7 @@ export default function App() {
       setData(json);
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Failed to load market data.",
+        err instanceof Error ? err.message : "Failed to load market data."
       );
     } finally {
       setLoading(false);
@@ -135,11 +134,12 @@ export default function App() {
 
         {/* Loading State */}
         {loading && !data && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-pulse">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-pulse">
             <div className="h-44 rounded-2xl bg-slate-900 border border-slate-800" />
             <div className="h-44 rounded-2xl bg-slate-900 border border-slate-800" />
             <div className="h-44 rounded-2xl bg-slate-900 border border-slate-800" />
-            <div className="h-36 lg:col-span-3 rounded-2xl bg-slate-900 border border-slate-800" />
+            <div className="h-44 rounded-2xl bg-slate-900 border border-slate-800" />
+            <div className="h-36 lg:col-span-2 rounded-2xl bg-slate-900 border border-slate-800" />
           </div>
         )}
 
@@ -171,46 +171,47 @@ export default function App() {
             </section>
 
             {/* Blackpool North Rail Card */}
-<div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 flex flex-col justify-between">
-  <div className="flex items-center justify-between mb-4">
-    <h2 className="text-xs font-semibold tracking-wider text-slate-400 uppercase">
-      Blackpool North Rail (BPN)
-    </h2>
-    <span
-      className={`px-3 py-1 rounded-full text-xs font-medium border ${
-        data.rail?.status === "On Time"
-          ? "bg-emerald-950/60 text-emerald-400 border-emerald-800/60"
-          : data.rail?.status === "Minor Delays"
-          ? "bg-amber-950/60 text-amber-400 border-amber-800/60"
-          : data.rail?.status === "Disrupted"
-          ? "bg-rose-950/60 text-rose-400 border-rose-800/60"
-          : "bg-slate-800 text-slate-400 border-slate-700"
-      }`}
-    >
-      {data.rail?.status || "Unavailable"}
-    </span>
-  </div>
+            <section className="rounded-2xl bg-slate-900 border border-slate-800 p-6 flex flex-col justify-between">
+              <div className="flex items-center justify-between gap-2">
+                <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-400">
+                  Blackpool North Rail (BPN)
+                </h2>
+                <span
+                  className={`px-3 py-1 rounded-full text-xs font-medium border shrink-0 ${
+                    data.rail?.status === "On Time"
+                      ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40"
+                      : data.rail?.status === "Minor Delays"
+                        ? "bg-amber-500/20 text-amber-300 border-amber-500/40"
+                        : data.rail?.status === "Disrupted"
+                          ? "bg-red-500/20 text-red-300 border-red-500/40"
+                          : "bg-slate-700/40 text-slate-300 border-slate-600/50"
+                  }`}
+                >
+                  {data.rail?.status || "Unavailable"}
+                </span>
+              </div>
 
-  <div>
-    <div className="text-4xl font-bold text-white mb-1">
-      {data.rail?.status === "On Time"
-        ? "Clear"
-        : `${(data.rail?.delayed_trains ?? 0) + (data.rail?.cancelled_trains ?? 0)} affected`}
-    </div>
-    <p className="text-sm text-sky-400 mb-4">
-      {data.rail?.next_affected_route
-        ? `Affected route: ${data.rail.next_affected_route}`
-        : `Inbound arrivals checked: ${data.rail?.total_checked ?? 0}`}
-    </p>
-  </div>
+              <div className="my-4">
+                <div className="text-5xl font-bold text-white">
+                  {data.rail?.status === "On Time"
+                    ? "Clear"
+                    : `${(data.rail?.delayed_trains ?? 0) + (data.rail?.cancelled_trains ?? 0)} affected`}
+                </div>
+                <p className="text-xs text-sky-400 mt-1">
+                  {data.rail?.next_affected_route
+                    ? `Affected route: ${data.rail.next_affected_route}`
+                    : `Inbound arrivals checked: ${data.rail?.total_checked ?? 0}`}
+                </p>
+              </div>
 
-  <div className="text-sm text-slate-300">
-    <span className="font-semibold text-white">
-      {data.rail?.delayed_trains ?? 0} delayed • {data.rail?.cancelled_trains ?? 0} cancelled
-    </span>{" "}
-    <span className="text-slate-400">(Realtime Trains)</span>
-  </div>
-</div>
+              <p className="text-sm text-slate-400">
+                <span className="text-slate-200 font-medium">
+                  {data.rail?.delayed_trains ?? 0} delayed •{" "}
+                  {data.rail?.cancelled_trains ?? 0} cancelled
+                </span>{" "}
+                (Realtime Trains)
+              </p>
+            </section>
 
             {/* Traffic Card */}
             <section className="rounded-2xl bg-slate-900 border border-slate-800 p-6 flex flex-col justify-between">
@@ -293,7 +294,7 @@ export default function App() {
             </section>
 
             {/* Commercial Strategy Banner */}
-            <section className="lg:col-span-3 rounded-2xl bg-linear-to-br from-slate-900 to-sky-950/40 border border-sky-800/50 p-6">
+            <section className="lg:col-span-2 rounded-2xl bg-linear-to-br from-slate-900 to-sky-950/40 border border-sky-800/50 p-6">
               <h2 className="text-sm font-semibold uppercase tracking-wider text-sky-400 mb-3">
                 Automated F&B Commercial Strategy
               </h2>
@@ -303,7 +304,7 @@ export default function App() {
             </section>
 
             {/* Upcoming Blackpool Events */}
-            <section className="lg:col-span-3 rounded-2xl bg-slate-900 border border-slate-800 p-6">
+            <section className="lg:col-span-2 rounded-2xl bg-slate-900 border border-slate-800 p-6">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-400">
                   Upcoming Blackpool Footfall Drivers
