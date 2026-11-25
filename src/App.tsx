@@ -65,6 +65,7 @@ interface MatchdayData {
 
 interface LocalDiningOffer {
   title: string;
+  offer_tag?: string;
   source: string;
   snippet: string;
   link: string;
@@ -99,10 +100,34 @@ interface MarketIntelData {
   commercial_recommendation: string;
 }
 
+function getUkGreeting() {
+  const now = new Date();
+  const ukHour = Number(
+    new Intl.DateTimeFormat("en-GB", {
+      timeZone: "Europe/London",
+      hour: "2-digit",
+      hour12: false,
+    }).format(now),
+  );
+  const ukDate = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Europe/London",
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(now);
+
+  if (ukHour < 12) return { greeting: "Good Morning", date: ukDate };
+  if (ukHour < 18) return { greeting: "Good Afternoon", date: ukDate };
+  return { greeting: "Good Evening", date: ukDate };
+}
+
 export default function App() {
   const [data, setData] = useState<MarketIntelData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+
+  const { greeting, date: ukDateLabel } = getUkGreeting();
 
   const fetchIntel = async () => {
     setLoading(true);
@@ -218,14 +243,35 @@ export default function App() {
             <div className="h-44 rounded-2xl bg-slate-900 border border-slate-800" />
             <div className="h-44 rounded-2xl bg-slate-900 border border-slate-800" />
             <div className="h-44 rounded-2xl bg-slate-900 border border-slate-800" />
+            <div className="h-44 rounded-2xl bg-slate-900 border border-slate-800" />
+            <div className="h-44 rounded-2xl bg-slate-900 border border-slate-800" />
             <div className="h-36 lg:col-span-2 rounded-2xl bg-slate-900 border border-slate-800" />
           </div>
         )}
 
-        {/* Dashboard Grid */}
+        {/* Dashboard Grid (4x2) */}
         {data && (
           <main className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-            {/* ROW 1 LEFT: Busy Risk Card (Green / Orange / Red) */}
+            {/* ROW 1 LEFT: Welcome Card */}
+            <section className="rounded-2xl bg-linear-to-br from-slate-900 to-sky-950/40 border border-sky-800/40 p-6 flex flex-col justify-between">
+              <div className="flex items-center justify-between gap-2">
+                <h2 className="text-sm font-semibold uppercase tracking-wider text-sky-400">
+                  Shift Briefing
+                </h2>
+                <span className="text-xs text-slate-400">Blackpool, UK</span>
+              </div>
+
+              <div className="my-4">
+                <div className="text-4xl font-bold text-white">{greeting}</div>
+                <p className="text-sm text-sky-300 mt-1">{ukDateLabel}</p>
+              </div>
+
+              <p className="text-sm text-slate-400">
+                The Carlton Hotel • Live F&B demand, travel & local footfall
+              </p>
+            </section>
+
+            {/* ROW 1 RIGHT: Busy Risk Card (Green / Orange / Red) */}
             <section
               className={`rounded-2xl border p-6 flex flex-col justify-between ${riskStyles.card}`}
             >
@@ -256,7 +302,31 @@ export default function App() {
               </p>
             </section>
 
-            {/* ROW 1 RIGHT: Hotel Demand Card */}
+            {/* ROW 2 LEFT: Weather Card */}
+            <section className="rounded-2xl bg-slate-900 border border-slate-800 p-6 flex flex-col justify-between">
+              <div className="flex items-center justify-between">
+                <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-400">
+                  Live Seafront Weather
+                </h2>
+                <span className="text-xs text-slate-500">{data.location}</span>
+              </div>
+              <div className="my-4 flex items-baseline gap-4">
+                <span className="text-5xl font-bold text-white">
+                  {data.weather.temp_celsius}°C
+                </span>
+                <span className="text-lg capitalize text-sky-300">
+                  {data.weather.condition}
+                </span>
+              </div>
+              <p className="text-sm text-slate-400">
+                Wind Speed:{" "}
+                <span className="text-slate-200 font-medium">
+                  {data.weather.wind_speed_mph} mph
+                </span>
+              </p>
+            </section>
+
+            {/* ROW 2 RIGHT: Hotel Demand Card */}
             <section className="rounded-2xl bg-slate-900 border border-slate-800 p-6 flex flex-col justify-between">
               <div className="flex items-center justify-between gap-2">
                 <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-400">
@@ -313,7 +383,7 @@ export default function App() {
               </div>
             </section>
 
-            {/* ROW 2 LEFT: M55 Traffic Card */}
+            {/* ROW 3 LEFT: M55 Traffic Card */}
             <section className="rounded-2xl bg-slate-900 border border-slate-800 p-6 flex flex-col justify-between">
               <div className="flex items-center justify-between gap-2">
                 <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-400">
@@ -336,7 +406,7 @@ export default function App() {
               </p>
             </section>
 
-            {/* ROW 2 RIGHT: Blackpool North Rail Card */}
+            {/* ROW 3 RIGHT: Blackpool North Rail Card */}
             <section className="rounded-2xl bg-slate-900 border border-slate-800 p-6 flex flex-col justify-between">
               <div className="flex items-center justify-between gap-2">
                 <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-400">
@@ -379,31 +449,7 @@ export default function App() {
               </p>
             </section>
 
-            {/* ROW 3 LEFT: Weather Card */}
-            <section className="rounded-2xl bg-slate-900 border border-slate-800 p-6 flex flex-col justify-between">
-              <div className="flex items-center justify-between">
-                <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-400">
-                  Live Seafront Weather
-                </h2>
-                <span className="text-xs text-slate-500">{data.location}</span>
-              </div>
-              <div className="my-4 flex items-baseline gap-4">
-                <span className="text-5xl font-bold text-white">
-                  {data.weather.temp_celsius}°C
-                </span>
-                <span className="text-lg capitalize text-sky-300">
-                  {data.weather.condition}
-                </span>
-              </div>
-              <p className="text-sm text-slate-400">
-                Wind Speed:{" "}
-                <span className="text-slate-200 font-medium">
-                  {data.weather.wind_speed_mph} mph
-                </span>
-              </p>
-            </section>
-
-            {/* ROW 3 RIGHT: UK School & Bank Holidays Card */}
+            {/* ROW 4 LEFT: UK School & Bank Holidays Card */}
             <section className="rounded-2xl bg-slate-900 border border-slate-800 p-6 flex flex-col justify-between">
               <div className="flex items-center justify-between gap-2">
                 <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-400">
@@ -452,67 +498,66 @@ export default function App() {
               </p>
             </section>
 
-            {/* FULL-WIDTH: Blackpool FC Matchday Card */}
+            {/* ROW 4 RIGHT: Blackpool FC Matchday Card */}
             <section
-              className={`lg:col-span-2 rounded-2xl border p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 ${
+              className={`rounded-2xl border p-6 flex flex-col justify-between ${
                 data.matchday?.is_home_matchday
                   ? "bg-orange-950/35 border-orange-600/60"
                   : "bg-slate-900 border-slate-800"
               }`}
             >
-              <div>
-                <div className="flex items-center gap-3 mb-2">
-                  <h2 className="text-sm font-semibold uppercase tracking-wider text-orange-400">
-                    Blackpool FC • Bloomfield Road
-                  </h2>
-                  <span
-                    className={`text-xs font-medium px-3 py-0.5 rounded-full border ${
-                      data.matchday?.is_home_matchday
-                        ? "bg-orange-500/20 text-orange-300 border-orange-500/50"
-                        : "bg-slate-800 text-slate-300 border-slate-700"
-                    }`}
-                  >
-                    {data.matchday?.is_home_matchday
-                      ? "Home Matchday Today"
-                      : "No Home Match Today"}
-                  </span>
-                </div>
+              <div className="flex items-center justify-between gap-2">
+                <h2 className="text-sm font-semibold uppercase tracking-wider text-orange-400">
+                  Blackpool FC • Home
+                </h2>
+                <span
+                  className={`text-xs font-medium px-3 py-1 rounded-full border shrink-0 ${
+                    data.matchday?.is_home_matchday
+                      ? "bg-orange-500/20 text-orange-300 border-orange-500/50"
+                      : "bg-slate-800 text-slate-300 border-slate-700"
+                  }`}
+                >
+                  {data.matchday?.is_home_matchday
+                    ? "Matchday Today"
+                    : data.matchday?.next_fixture
+                      ? `In ${data.matchday.next_fixture.days_until}d`
+                      : "No Match"}
+                </span>
+              </div>
 
+              <div className="my-4">
                 {data.matchday?.is_home_matchday &&
                 data.matchday.today_fixture ? (
-                  <p className="text-xl font-bold text-white">
-                    Blackpool vs {data.matchday.today_fixture.opponent} • KO{" "}
-                    {data.matchday.today_fixture.kickoff} (
-                    {data.matchday.today_fixture.competition})
-                  </p>
+                  <>
+                    <div className="text-3xl font-bold text-white">
+                      vs {data.matchday.today_fixture.opponent}
+                    </div>
+                    <p className="text-xs text-orange-300 mt-1">
+                      Today • {data.matchday.today_fixture.kickoff} KO (
+                      {data.matchday.today_fixture.competition})
+                    </p>
+                  </>
                 ) : data.matchday?.next_fixture ? (
-                  <p className="text-lg font-semibold text-white">
-                    Next Home Match: Blackpool vs{" "}
-                    {data.matchday.next_fixture.opponent}{" "}
-                    <span className="text-sky-400 font-normal text-sm">
-                      ({data.matchday.next_fixture.date} •{" "}
-                      {data.matchday.next_fixture.kickoff} KO)
-                    </span>
-                  </p>
+                  <>
+                    <div className="text-3xl font-bold text-white">
+                      vs {data.matchday.next_fixture.opponent}
+                    </div>
+                    <p className="text-xs text-sky-400 mt-1">
+                      {data.matchday.next_fixture.date} •{" "}
+                      {data.matchday.next_fixture.kickoff} KO (
+                      {data.matchday.next_fixture.competition})
+                    </p>
+                  </>
                 ) : (
-                  <p className="text-sm text-slate-400">
-                    No upcoming home fixtures scheduled.
-                  </p>
+                  <div className="text-2xl font-bold text-slate-300">
+                    No upcoming fixtures
+                  </div>
                 )}
               </div>
 
-              {data.matchday?.next_fixture && (
-                <div className="text-left sm:text-right shrink-0">
-                  <div className="text-3xl font-bold text-orange-400">
-                    {data.matchday.is_home_matchday
-                      ? "TODAY"
-                      : `In ${data.matchday.next_fixture.days_until}d`}
-                  </div>
-                  <p className="text-xs text-slate-400">
-                    Pre/post-match bar spike
-                  </p>
-                </div>
-              )}
+              <p className="text-sm text-slate-400">
+                Bloomfield Road • Pre/post-match bar & dining spike
+              </p>
             </section>
 
             {/* Commercial Strategy Banner */}
@@ -532,7 +577,7 @@ export default function App() {
                   Local Blackpool Dining & Bar Offers
                 </h2>
                 <span className="text-xs text-slate-500">
-                  Nearby Pubs & Restaurants
+                  Active Deals • Nearby Pubs & Restaurants
                 </span>
               </div>
 
@@ -540,17 +585,24 @@ export default function App() {
               data.local_dining_offers.length > 0 ? (
                 <ul className="divide-y divide-slate-800">
                   {data.local_dining_offers.map((offer, idx) => (
-                    <li key={idx} className="py-3.5 space-y-1">
+                    <li key={idx} className="py-3.5 space-y-1.5">
                       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                        <a
-                          href={offer.link}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="font-medium text-slate-100 hover:text-sky-400 transition"
-                        >
-                          {offer.title}
-                        </a>
-                        <span className="text-xs text-emerald-300 bg-emerald-500/10 border border-emerald-500/30 px-2.5 py-0.5 rounded-full w-fit shrink-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <a
+                            href={offer.link}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="font-medium text-slate-100 hover:text-sky-400 transition"
+                          >
+                            {offer.title}
+                          </a>
+                          {offer.offer_tag && (
+                            <span className="text-xs font-semibold text-amber-300 bg-amber-500/15 border border-amber-500/35 px-2.5 py-0.5 rounded-full">
+                              {offer.offer_tag}
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-xs text-slate-400 shrink-0">
                           {offer.source}
                         </span>
                       </div>
@@ -564,7 +616,7 @@ export default function App() {
                 </ul>
               ) : (
                 <p className="text-sm text-slate-400">
-                  No local dining or bar offers found right now.
+                  No active local dining or bar deals found right now.
                 </p>
               )}
             </section>
