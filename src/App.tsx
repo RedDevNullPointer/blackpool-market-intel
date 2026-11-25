@@ -46,6 +46,30 @@ interface HolidaysData {
   } | null;
 }
 
+interface MatchdayData {
+  is_home_matchday: boolean;
+  today_fixture: {
+    date: string;
+    kickoff: string;
+    opponent: string;
+    competition: string;
+  } | null;
+  next_fixture: {
+    date: string;
+    kickoff: string;
+    opponent: string;
+    competition: string;
+    days_until: number;
+  } | null;
+}
+
+interface LocalDiningOffer {
+  title: string;
+  source: string;
+  snippet: string;
+  link: string;
+}
+
 interface MarketIntelData {
   location: string;
   timestamp: string;
@@ -69,6 +93,8 @@ interface MarketIntelData {
   };
   hotel_market?: HotelMarketData;
   holidays?: HolidaysData;
+  matchday?: MatchdayData;
+  local_dining_offers?: LocalDiningOffer[];
   events?: EventItem[];
   commercial_recommendation: string;
 }
@@ -426,6 +452,69 @@ export default function App() {
               </p>
             </section>
 
+            {/* FULL-WIDTH: Blackpool FC Matchday Card */}
+            <section
+              className={`lg:col-span-2 rounded-2xl border p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 ${
+                data.matchday?.is_home_matchday
+                  ? "bg-orange-950/35 border-orange-600/60"
+                  : "bg-slate-900 border-slate-800"
+              }`}
+            >
+              <div>
+                <div className="flex items-center gap-3 mb-2">
+                  <h2 className="text-sm font-semibold uppercase tracking-wider text-orange-400">
+                    Blackpool FC • Bloomfield Road
+                  </h2>
+                  <span
+                    className={`text-xs font-medium px-3 py-0.5 rounded-full border ${
+                      data.matchday?.is_home_matchday
+                        ? "bg-orange-500/20 text-orange-300 border-orange-500/50"
+                        : "bg-slate-800 text-slate-300 border-slate-700"
+                    }`}
+                  >
+                    {data.matchday?.is_home_matchday
+                      ? "Home Matchday Today"
+                      : "No Home Match Today"}
+                  </span>
+                </div>
+
+                {data.matchday?.is_home_matchday &&
+                data.matchday.today_fixture ? (
+                  <p className="text-xl font-bold text-white">
+                    Blackpool vs {data.matchday.today_fixture.opponent} • KO{" "}
+                    {data.matchday.today_fixture.kickoff} (
+                    {data.matchday.today_fixture.competition})
+                  </p>
+                ) : data.matchday?.next_fixture ? (
+                  <p className="text-lg font-semibold text-white">
+                    Next Home Match: Blackpool vs{" "}
+                    {data.matchday.next_fixture.opponent}{" "}
+                    <span className="text-sky-400 font-normal text-sm">
+                      ({data.matchday.next_fixture.date} •{" "}
+                      {data.matchday.next_fixture.kickoff} KO)
+                    </span>
+                  </p>
+                ) : (
+                  <p className="text-sm text-slate-400">
+                    No upcoming home fixtures scheduled.
+                  </p>
+                )}
+              </div>
+
+              {data.matchday?.next_fixture && (
+                <div className="text-left sm:text-right shrink-0">
+                  <div className="text-3xl font-bold text-orange-400">
+                    {data.matchday.is_home_matchday
+                      ? "TODAY"
+                      : `In ${data.matchday.next_fixture.days_until}d`}
+                  </div>
+                  <p className="text-xs text-slate-400">
+                    Pre/post-match bar spike
+                  </p>
+                </div>
+              )}
+            </section>
+
             {/* Commercial Strategy Banner */}
             <section className="lg:col-span-2 rounded-2xl bg-linear-to-br from-slate-900 to-sky-950/40 border border-sky-800/50 p-6">
               <h2 className="text-sm font-semibold uppercase tracking-wider text-sky-400 mb-3">
@@ -434,6 +523,50 @@ export default function App() {
               <p className="text-lg leading-relaxed text-slate-100">
                 {data.commercial_recommendation}
               </p>
+            </section>
+
+            {/* Local Restaurant & Pub Dining/Bar Offers */}
+            <section className="lg:col-span-2 rounded-2xl bg-slate-900 border border-slate-800 p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-400">
+                  Local Blackpool Dining & Bar Offers
+                </h2>
+                <span className="text-xs text-slate-500">
+                  Nearby Pubs & Restaurants
+                </span>
+              </div>
+
+              {data.local_dining_offers &&
+              data.local_dining_offers.length > 0 ? (
+                <ul className="divide-y divide-slate-800">
+                  {data.local_dining_offers.map((offer, idx) => (
+                    <li key={idx} className="py-3.5 space-y-1">
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                        <a
+                          href={offer.link}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="font-medium text-slate-100 hover:text-sky-400 transition"
+                        >
+                          {offer.title}
+                        </a>
+                        <span className="text-xs text-emerald-300 bg-emerald-500/10 border border-emerald-500/30 px-2.5 py-0.5 rounded-full w-fit shrink-0">
+                          {offer.source}
+                        </span>
+                      </div>
+                      {offer.snippet && (
+                        <p className="text-xs text-slate-400 leading-relaxed">
+                          {offer.snippet}
+                        </p>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-sm text-slate-400">
+                  No local dining or bar offers found right now.
+                </p>
+              )}
             </section>
 
             {/* Upcoming Blackpool Events */}
