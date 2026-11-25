@@ -19,9 +19,37 @@ interface HotelMarketData {
   carlton_rate_gbp: number | null;
 }
 
+interface BusyRiskData {
+  level: "Low" | "Moderate" | "High";
+  color: "green" | "orange" | "red";
+  score: number;
+  reasons: string[];
+}
+
+interface HolidaysData {
+  is_school_holiday: boolean;
+  active_school_holiday: string | null;
+  active_nations: string[];
+  next_school_holiday: {
+    name: string;
+    start: string;
+    nations: string[];
+    days_until: number;
+  } | null;
+  is_bank_holiday_monday: boolean;
+  bank_holiday_weekend_soon: boolean;
+  next_bank_holiday_monday: {
+    title: string;
+    date: string;
+    region: string;
+    days_until: number;
+  } | null;
+}
+
 interface MarketIntelData {
   location: string;
   timestamp: string;
+  busy_risk?: BusyRiskData;
   weather: {
     condition: string;
     temp_celsius: number;
@@ -40,6 +68,7 @@ interface MarketIntelData {
     delay_minutes: number;
   };
   hotel_market?: HotelMarketData;
+  holidays?: HolidaysData;
   events?: EventItem[];
   commercial_recommendation: string;
 }
@@ -69,7 +98,7 @@ export default function App() {
       setData(json);
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Failed to load market data."
+        err instanceof Error ? err.message : "Failed to load market data.",
       );
     } finally {
       setLoading(false);
@@ -95,6 +124,28 @@ export default function App() {
         : data?.hotel_market?.demand_level === "Low Demand"
           ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40"
           : "bg-slate-700/40 text-slate-300 border-slate-600/50";
+
+  const riskStyles =
+    data?.busy_risk?.color === "red"
+      ? {
+          card: "bg-red-950/30 border-red-700/60",
+          badge: "bg-red-500/20 text-red-300 border-red-500/50",
+          dot: "bg-red-500",
+          text: "text-red-400",
+        }
+      : data?.busy_risk?.color === "orange"
+        ? {
+            card: "bg-amber-950/30 border-amber-700/60",
+            badge: "bg-amber-500/20 text-amber-300 border-amber-500/50",
+            dot: "bg-amber-400",
+            text: "text-amber-400",
+          }
+        : {
+            card: "bg-emerald-950/25 border-emerald-700/50",
+            badge: "bg-emerald-500/20 text-emerald-300 border-emerald-500/50",
+            dot: "bg-emerald-400",
+            text: "text-emerald-400",
+          };
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 p-6 md:p-10">
@@ -139,6 +190,8 @@ export default function App() {
             <div className="h-44 rounded-2xl bg-slate-900 border border-slate-800" />
             <div className="h-44 rounded-2xl bg-slate-900 border border-slate-800" />
             <div className="h-44 rounded-2xl bg-slate-900 border border-slate-800" />
+            <div className="h-44 rounded-2xl bg-slate-900 border border-slate-800" />
+            <div className="h-44 rounded-2xl bg-slate-900 border border-slate-800" />
             <div className="h-36 lg:col-span-2 rounded-2xl bg-slate-900 border border-slate-800" />
           </div>
         )}
@@ -146,97 +199,38 @@ export default function App() {
         {/* Dashboard Grid */}
         {data && (
           <main className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-            {/* Weather Card */}
-            <section className="rounded-2xl bg-slate-900 border border-slate-800 p-6 flex flex-col justify-between">
-              <div className="flex items-center justify-between">
-                <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-400">
-                  Live Seafront Weather
-                </h2>
-                <span className="text-xs text-slate-500">{data.location}</span>
-              </div>
-              <div className="my-4 flex items-baseline gap-4">
-                <span className="text-5xl font-bold text-white">
-                  {data.weather.temp_celsius}°C
-                </span>
-                <span className="text-lg capitalize text-sky-300">
-                  {data.weather.condition}
-                </span>
-              </div>
-              <p className="text-sm text-slate-400">
-                Wind Speed:{" "}
-                <span className="text-slate-200 font-medium">
-                  {data.weather.wind_speed_mph} mph
-                </span>
-              </p>
-            </section>
-
-            {/* Blackpool North Rail Card */}
-            <section className="rounded-2xl bg-slate-900 border border-slate-800 p-6 flex flex-col justify-between">
+            {/* ROW 1 LEFT: Busy Risk Card (Green / Orange / Red) */}
+            <section
+              className={`rounded-2xl border p-6 flex flex-col justify-between ${riskStyles.card}`}
+            >
               <div className="flex items-center justify-between gap-2">
                 <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-400">
-                  Blackpool North Rail (BPN)
+                  F&B Busy Risk Level
                 </h2>
                 <span
-                  className={`px-3 py-1 rounded-full text-xs font-medium border shrink-0 ${
-                    data.rail?.status === "On Time"
-                      ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40"
-                      : data.rail?.status === "Minor Delays"
-                        ? "bg-amber-500/20 text-amber-300 border-amber-500/40"
-                        : data.rail?.status === "Disrupted"
-                          ? "bg-red-500/20 text-red-300 border-red-500/40"
-                          : "bg-slate-700/40 text-slate-300 border-slate-600/50"
-                  }`}
+                  className={`inline-flex items-center gap-2 text-xs font-medium px-3 py-1 rounded-full border shrink-0 ${riskStyles.badge}`}
                 >
-                  {data.rail?.status || "Unavailable"}
+                  <span className={`w-2 h-2 rounded-full ${riskStyles.dot}`} />
+                  {data.busy_risk?.level ?? "Low"} Risk
                 </span>
               </div>
 
               <div className="my-4">
-                <div className="text-5xl font-bold text-white">
-                  {data.rail?.status === "On Time"
-                    ? "Clear"
-                    : `${(data.rail?.delayed_trains ?? 0) + (data.rail?.cancelled_trains ?? 0)} affected`}
+                <div className={`text-5xl font-bold ${riskStyles.text}`}>
+                  {data.busy_risk?.level ?? "Low"}
                 </div>
-                <p className="text-xs text-sky-400 mt-1">
-                  {data.rail?.next_affected_route
-                    ? `Affected route: ${data.rail.next_affected_route}`
-                    : `Inbound arrivals checked: ${data.rail?.total_checked ?? 0}`}
+                <p className="text-xs text-slate-400 mt-1">
+                  Composite score: {data.busy_risk?.score ?? 0} / 10
                 </p>
               </div>
 
-              <p className="text-sm text-slate-400">
-                <span className="text-slate-200 font-medium">
-                  {data.rail?.delayed_trains ?? 0} delayed •{" "}
-                  {data.rail?.cancelled_trains ?? 0} cancelled
-                </span>{" "}
-                (Realtime Trains)
+              <p className="text-sm text-slate-300">
+                {data.busy_risk?.reasons?.slice(0, 2).join(" • ") ||
+                  "Standard midweek demand"}
               </p>
             </section>
 
-            {/* Traffic Card */}
-            <section className="rounded-2xl bg-slate-900 border border-slate-800 p-6 flex flex-col justify-between">
-              <div className="flex items-center justify-between gap-2">
-                <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-400">
-                  M55 Inbound Traffic
-                </h2>
-                <span
-                  className={`text-xs font-medium px-3 py-1 rounded-full border shrink-0 ${trafficBadgeColor}`}
-                >
-                  {data.traffic.m55_inbound_status}
-                </span>
-              </div>
-              <div className="my-4">
-                <span className="text-5xl font-bold text-white">
-                  {data.traffic.delay_minutes}
-                </span>
-                <span className="text-lg text-slate-400 ml-2">min delay</span>
-              </div>
-              <p className="text-sm text-slate-400">
-                Source: Live TomTom Flow Segment (M55 Corridor)
-              </p>
-            </section>
-
-            {/* Hotel Demand Card */}
+            {/* ROW 1 RIGHT: Hotel Demand Card */}
             <section className="rounded-2xl bg-slate-900 border border-slate-800 p-6 flex flex-col justify-between">
               <div className="flex items-center justify-between gap-2">
                 <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-400">
@@ -291,6 +285,145 @@ export default function App() {
                     </p>
                   )}
               </div>
+            </section>
+
+            {/* ROW 2 LEFT: M55 Traffic Card */}
+            <section className="rounded-2xl bg-slate-900 border border-slate-800 p-6 flex flex-col justify-between">
+              <div className="flex items-center justify-between gap-2">
+                <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-400">
+                  M55 Inbound Traffic
+                </h2>
+                <span
+                  className={`text-xs font-medium px-3 py-1 rounded-full border shrink-0 ${trafficBadgeColor}`}
+                >
+                  {data.traffic.m55_inbound_status}
+                </span>
+              </div>
+              <div className="my-4">
+                <span className="text-5xl font-bold text-white">
+                  {data.traffic.delay_minutes}
+                </span>
+                <span className="text-lg text-slate-400 ml-2">min delay</span>
+              </div>
+              <p className="text-sm text-slate-400">
+                Source: Live TomTom Flow Segment (M55 Corridor)
+              </p>
+            </section>
+
+            {/* ROW 2 RIGHT: Blackpool North Rail Card */}
+            <section className="rounded-2xl bg-slate-900 border border-slate-800 p-6 flex flex-col justify-between">
+              <div className="flex items-center justify-between gap-2">
+                <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-400">
+                  Blackpool North Rail (BPN)
+                </h2>
+                <span
+                  className={`px-3 py-1 rounded-full text-xs font-medium border shrink-0 ${
+                    data.rail?.status === "On Time"
+                      ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40"
+                      : data.rail?.status === "Minor Delays"
+                        ? "bg-amber-500/20 text-amber-300 border-amber-500/40"
+                        : data.rail?.status === "Disrupted"
+                          ? "bg-red-500/20 text-red-300 border-red-500/40"
+                          : "bg-slate-700/40 text-slate-300 border-slate-600/50"
+                  }`}
+                >
+                  {data.rail?.status || "Unavailable"}
+                </span>
+              </div>
+
+              <div className="my-4">
+                <div className="text-5xl font-bold text-white">
+                  {data.rail?.status === "On Time"
+                    ? "Clear"
+                    : `${(data.rail?.delayed_trains ?? 0) + (data.rail?.cancelled_trains ?? 0)} affected`}
+                </div>
+                <p className="text-xs text-sky-400 mt-1">
+                  {data.rail?.next_affected_route
+                    ? `Affected route: ${data.rail.next_affected_route}`
+                    : `Inbound arrivals checked: ${data.rail?.total_checked ?? 0}`}
+                </p>
+              </div>
+
+              <p className="text-sm text-slate-400">
+                <span className="text-slate-200 font-medium">
+                  {data.rail?.delayed_trains ?? 0} delayed •{" "}
+                  {data.rail?.cancelled_trains ?? 0} cancelled
+                </span>{" "}
+                (Realtime Trains)
+              </p>
+            </section>
+
+            {/* ROW 3 LEFT: Weather Card */}
+            <section className="rounded-2xl bg-slate-900 border border-slate-800 p-6 flex flex-col justify-between">
+              <div className="flex items-center justify-between">
+                <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-400">
+                  Live Seafront Weather
+                </h2>
+                <span className="text-xs text-slate-500">{data.location}</span>
+              </div>
+              <div className="my-4 flex items-baseline gap-4">
+                <span className="text-5xl font-bold text-white">
+                  {data.weather.temp_celsius}°C
+                </span>
+                <span className="text-lg capitalize text-sky-300">
+                  {data.weather.condition}
+                </span>
+              </div>
+              <p className="text-sm text-slate-400">
+                Wind Speed:{" "}
+                <span className="text-slate-200 font-medium">
+                  {data.weather.wind_speed_mph} mph
+                </span>
+              </p>
+            </section>
+
+            {/* ROW 3 RIGHT: UK School & Bank Holidays Card */}
+            <section className="rounded-2xl bg-slate-900 border border-slate-800 p-6 flex flex-col justify-between">
+              <div className="flex items-center justify-between gap-2">
+                <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-400">
+                  UK School & Bank Holidays
+                </h2>
+                <span
+                  className={`text-xs font-medium px-3 py-1 rounded-full border shrink-0 ${
+                    data.holidays?.is_school_holiday ||
+                    data.holidays?.is_bank_holiday_monday
+                      ? "bg-amber-500/20 text-amber-300 border-amber-500/40"
+                      : "bg-emerald-500/20 text-emerald-300 border-emerald-500/40"
+                  }`}
+                >
+                  {data.holidays?.is_bank_holiday_monday
+                    ? "Bank Holiday Mon"
+                    : data.holidays?.is_school_holiday
+                      ? "School Holiday"
+                      : "Term Time"}
+                </span>
+              </div>
+
+              <div className="my-4">
+                <div className="text-3xl font-bold text-white">
+                  {data.holidays?.is_school_holiday
+                    ? data.holidays.active_school_holiday
+                    : data.holidays?.next_school_holiday
+                      ? `${data.holidays.next_school_holiday.name} in ${data.holidays.next_school_holiday.days_until}d`
+                      : "Term Time"}
+                </div>
+                <p className="text-xs text-sky-400 mt-1">
+                  {data.holidays?.is_school_holiday
+                    ? `Active: ${data.holidays.active_nations.join(", ")}`
+                    : data.holidays?.next_school_holiday
+                      ? `Starts ${data.holidays.next_school_holiday.start} (${data.holidays.next_school_holiday.nations.join(", ")})`
+                      : "England, Scotland & Wales"}
+                </p>
+              </div>
+
+              <p className="text-sm text-slate-400">
+                Next Bank Hol Mon:{" "}
+                <span className="text-slate-200 font-medium">
+                  {data.holidays?.next_bank_holiday_monday
+                    ? `${data.holidays.next_bank_holiday_monday.title} (${data.holidays.next_bank_holiday_monday.date}, ${data.holidays.next_bank_holiday_monday.region})`
+                    : "None upcoming"}
+                </span>
+              </p>
             </section>
 
             {/* Commercial Strategy Banner */}
