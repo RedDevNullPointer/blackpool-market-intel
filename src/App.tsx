@@ -101,7 +101,7 @@ export default function App() {
         {data && (
           <main className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
             <WelcomeCard />
-            <BusyRiskCard busyRisk={data.busy_risk} />
+            <BusyRiskCard busyRisk={data.busy_risk} holidays={data.holidays} />
             <WeatherCard location={data.location} weather={data.weather} />
             <HotelDemandCard hotelMarket={data.hotel_market} />
             <TrafficCard traffic={data.traffic} />

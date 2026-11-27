@@ -1,6 +1,11 @@
-import type { BusyRiskData } from "../types/marketIntel";
+import type { BusyRiskData, HolidaysData } from "../types/marketIntel";
 
-export function BusyRiskCard({ busyRisk }: { busyRisk?: BusyRiskData }) {
+interface Props {
+  busyRisk?: BusyRiskData;
+  holidays?: HolidaysData;
+}
+
+export function BusyRiskCard({ busyRisk, holidays }: Props) {
   const riskStyles =
     busyRisk?.color === "red"
       ? {
@@ -22,6 +27,14 @@ export function BusyRiskCard({ busyRisk }: { busyRisk?: BusyRiskData }) {
             dot: "bg-emerald-400",
             text: "text-emerald-400",
           };
+
+  const nextBankHol = holidays?.next_bank_holiday_monday;
+  const formattedReasons = (busyRisk?.reasons ?? []).map((reason) => {
+    if (reason.startsWith("Bank Holiday Monday") && nextBankHol) {
+      return `${nextBankHol.title} (${nextBankHol.region}, ${nextBankHol.date})`;
+    }
+    return reason;
+  });
 
   return (
     <section
@@ -49,8 +62,7 @@ export function BusyRiskCard({ busyRisk }: { busyRisk?: BusyRiskData }) {
       </div>
 
       <p className="text-sm text-slate-300">
-        {busyRisk?.reasons?.slice(0, 2).join(" • ") ||
-          "Standard midweek demand"}
+        {formattedReasons.slice(0, 2).join(" • ") || "Standard midweek demand"}
       </p>
     </section>
   );

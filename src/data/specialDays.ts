@@ -91,7 +91,8 @@ const FIXED_SPECIAL_DAYS: SpecialDay[] = [
     category: "Local & Cultural",
     month: 11,
     day: 27,
-    fbTip: "Spotlight Lancashire Hotpot, regional cheeses, and local ales.",
+    fbTip:
+      "Expect increased local footfall — check bar par levels and floor cover.",
   },
   {
     id: "nye",
